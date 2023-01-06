@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Gallery</title>
+        <style>
+            /* 
+                The range slider event listener assumes
+                this rule to be the first one in the stylesheet.
+
+                Child number 0 does not exist, thus no images
+                are shown initially. Once javascript is executed the
+                correct one becomes visible.
+            */
+            img:nth-child(0) {
+                display: block; 
+                /* center image horizontally */
+                margin-left: 50%;
+                transform: translateX(-50%);
+            }
+
+            img {
+                display: none;
+            }
+
+            #slidercontainer {
+                width: 100%; /* Width of the outside container */
+                display: flex;
+            }
+
+            /* The slider itself */
+            #slider {
+                -webkit-appearance: none;  /* Override default CSS styles */
+                appearance: none;
+                flex-grow: 1;
+                height: 25px; /* Specified height */
+                background: #d3d3d3; /* Grey background */
+                outline: none; /* Remove outline */
+                opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+                -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+                transition: opacity .2s;
+            }
+
+            /* Mouse-over effects */
+            #slider:hover {
+                opacity: 1; /* Fully shown on mouse-over */
+            }
+
+            
+        </style>
+    </head>
+    <body>
+        <div id="slidercontainer">
+            <button id="back">Back</button>
+            <input
+                type="range" 
+                id="slider"
+                min="1" max="{{ files|length }}"
+                value="1">
+            <button id="forward">Forward</button>
+        </div>
+        <div id="images">
+            {% for image in files %}
+            <img src="{{ static_url_path }}/{{ image }}" loading="lazy" />
+            {% endfor %}
+        </div>
+        <script>
+            const input = document.querySelector("#slider")
+            
+            function syncImage() {
+                document.styleSheets[0].cssRules[0].selectorText = `img:nth-child(${input.value})`
+            }
+
+            // browser refresh might cache input value, thus update img immediately
+            syncImage()
+
+            const back = document.querySelector("#back")
+            const forward = document.querySelector("#forward")
+
+            // buttons trigger changes to the slider
+            back.addEventListener("click", () => {
+                if (input.value > input.min) {
+                    input.value--
+                }
+                syncImage()
+            })
+            forward.addEventListener("click", () => {
+                if (input.value < input.max) {
+                    input.value++
+                }
+                syncImage()
+            })
+           
+            // user might drag/move the slider
+            input.addEventListener("input", (event) => {
+                syncImage()
+            })
+
+            // user might click left/right arrow
+            document.addEventListener('keydown', ({ key }) => {
+                if (key === 'ArrowLeft') {
+                    if (input.value > input.min) {
+                        input.value--
+                    }
+                    syncImage()
+                }
+                else if (key === 'ArrowRight') {
+                    if (input.value < input.max) {
+                        input.value++
+                    }
+                    syncImage()
+                }
+            }, false)
+        </script>
+          
+    </body>
+</html>
